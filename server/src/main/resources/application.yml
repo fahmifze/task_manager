@@ -1,0 +1,99 @@
+# =============================================================================
+# SPRING BOOT CONFIGURATION FILE
+# =============================================================================
+#
+# This file configures your Spring Boot application.
+# YAML format is cleaner than .properties format.
+#
+# ANALOGY: This is like Laravel's .env and config/ files combined
+#
+# IMPORTANT: In production, use environment variables instead of hardcoded values!
+
+# Server Configuration
+server:
+  port: 8080  # The port your API runs on (http://localhost:8080)
+
+# Spring Configuration
+spring:
+  application:
+    name: task-manager  # Application name (shows in logs)
+  
+  # ===========================================
+  # DATABASE CONFIGURATION
+  # ===========================================
+  datasource:
+    # MySQL connection URL
+    # Format: jdbc:mysql://HOST:PORT/DATABASE_NAME
+    url: jdbc:mysql://localhost:3306/task_manager?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    
+    # Database credentials (change these for your setup!)
+    username: root
+    password:  # Empty for Laragon default, or your MySQL password
+    
+    # MySQL driver class
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # ===========================================
+  # JPA / HIBERNATE CONFIGURATION
+  # ===========================================
+  jpa:
+    # Hibernate settings
+    hibernate:
+      # DDL Auto options:
+      #   none    - Don't touch the database schema
+      #   validate - Validate schema matches entities (error if mismatch)
+      #   update  - Update schema to match entities (ADD columns, won't DELETE)
+      #   create  - Drop and recreate tables on each startup
+      #   create-drop - Create on startup, drop on shutdown
+      #
+      # For development: use "update" (convenient, preserves data)
+      # For production: use "none" or "validate" (use migrations instead)
+      ddl-auto: update
+    
+    # Show SQL queries in console (helpful for debugging)
+    show-sql: true
+    
+    # Format SQL queries nicely in logs
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  
+  # ===========================================
+  # JACKSON (JSON) CONFIGURATION
+  # ===========================================
+  jackson:
+    # How to serialize dates in JSON
+    serialization:
+      write-dates-as-timestamps: false  # Use ISO format instead of timestamps
+    
+    # Timezone for date/time serialization
+    time-zone: UTC
+
+# ===========================================
+# LOGGING CONFIGURATION
+# ===========================================
+logging:
+  level:
+    # Show SQL parameter values (not just ?)
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    
+    # Show Spring Web requests
+    org.springframework.web: INFO
+    
+    # Your application logs
+    com.taskmanager: DEBUG
+
+# =============================================================================
+# CONFIGURATION BY ENVIRONMENT
+# =============================================================================
+#
+# You can create additional files for different environments:
+#   - application-dev.yml   (development settings)
+#   - application-prod.yml  (production settings)
+#
+# Activate with: java -jar app.jar --spring.profiles.active=prod
+#
+# Or in your IDE run configuration, add:
+#   --spring.profiles.active=dev
