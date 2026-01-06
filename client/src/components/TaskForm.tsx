@@ -37,11 +37,13 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
     const formData: TaskFormData = {
       title: title.trim(),
       description: description.trim(),
+      dueDate: dueDate ? dueDate : undefined,
     };
     onSubmit(formData);
     if (!taskToEdit) { // Clear form only when creating new task
       setTitle('');
       setDescription('');
+      setDueDate('');
     }
   };
 
@@ -53,11 +55,6 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
     onCancel?.(); // Call onCancel if provided
   };
 
-  const formData : TaskFormData = {
-    title : title.trim(),
-    description : description.trim(),
-    dueDate : dueDate ? dueDate : undefined,
-  };
   const isEditing = !!taskToEdit; // Check if in edit mode
 
   return (
