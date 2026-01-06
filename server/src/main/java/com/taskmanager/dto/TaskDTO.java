@@ -13,6 +13,7 @@ public class TaskDTO {
     private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime dueDate;
 
     public TaskDTO() {} // Required for JSON deserialization, an empty constructor, cannot create object without this
 
@@ -26,6 +27,7 @@ public class TaskDTO {
         this.completed = completed;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt; 
+        this.dueDate = dueDate;
     }
 
     // Convert Entity to DTO (for API responses)
@@ -37,6 +39,7 @@ public class TaskDTO {
         dto.setCompleted(task.isCompleted());
         dto.setCreatedAt(task.getCreatedAt());
         dto.setUpdatedAt(task.getUpdatedAt());
+        dto.setDueDate(task.getDueDate());
         return dto;
     }
 
@@ -47,6 +50,7 @@ public class TaskDTO {
         task.setTitle(this.title);
         task.setDescription(this.description);
         task.setCompleted(this.completed);
+        task.setDueDate(this.dueDate);
         return task;
     }
 
@@ -71,6 +75,9 @@ public class TaskDTO {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getDueDate() { return dueDate; }
+    public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; }
 }
 
 //SOME EXTRA NOTES TO UNDERSTAND DTO

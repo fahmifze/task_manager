@@ -12,15 +12,18 @@ interface TaskFormProps {
 export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState(''); // Title input state
   const [description, setDescription] = useState(''); // Description input state
+  const [dueDate, setDueDate] = useState<string | undefined>(); // Due date input state
 
   // Populate form when editing, clear when creating
   useEffect(() => {
     if (taskToEdit) {
       setTitle(taskToEdit.title);
       setDescription(taskToEdit.description || '');
+      setDueDate(taskToEdit.dueDate);
     } else {
       setTitle('');
       setDescription('');
+      setDueDate('');
     }
   }, [taskToEdit]); // Re-run when taskToEdit changes
 
@@ -87,7 +90,19 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-
+      {/* Due Date Input */}
+      <div className="mb-4">
+        <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1">
+          Due Date
+        </label>
+        <input
+          type="date"
+          id="dueDate"
+          value={dueDate ? dueDate.split('T')[0] : ''}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
       {/* Action Buttons */}
       <div className="flex gap-2">
         <button
@@ -110,3 +125,6 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
     </form>
   );
 }
+
+//The form doesn't save anything itself - 
+// it just collects data and passes it up to the parent component.

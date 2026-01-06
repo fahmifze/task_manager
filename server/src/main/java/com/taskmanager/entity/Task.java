@@ -26,6 +26,9 @@ public class Task {
     @Column(name = "updated_at") // Maps to updated_at column
     private LocalDateTime updatedAt; //store last date time
 
+     @Column(name = "due_date") // Maps to due_date column
+    private LocalDateTime dueDate; //store due date time
+
     @PrePersist // Runs before first save a new task 
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -63,4 +66,7 @@ public class Task {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; } // get updated at timestamp
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; } // set updated at timestamp
+
+    public LocalDateTime getDueDate() { return dueDate; } // get due date timestamp
+    public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; } // set due date timestamp
 }

@@ -50,6 +50,12 @@ export function TaskItem({ task, onDelete, onToggle, onEdit }: TaskItemProps) {
         </div>
       </div>
 
+      {/* Due Date */}
+      {task.dueDate && (
+        <p className="text-sm text-gray-400 mt-2">
+          Due: {formatDate(task.dueDate)}
+        </p>
+      )}
       {/* Action Buttons */}
       <div className="flex gap-2 mt-3 justify-end">
         <button
@@ -69,3 +75,7 @@ export function TaskItem({ task, onDelete, onToggle, onEdit }: TaskItemProps) {
     </div>
   );
 }
+
+//It renders a single task card. 
+// Remember TaskList loops through tasks and renders one TaskItem for each.
+// It shows title, description, creation date, and has checkbox to toggle completion.

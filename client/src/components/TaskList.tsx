@@ -12,7 +12,7 @@ interface TaskListProps {
 
 // Component to render a list of tasks
 export function TaskList({ tasks, onDelete, onToggle, onEdit, loading }: TaskListProps) {
-  // Show loading spinner while fetching data
+  // Show loading spinner while fetching data for a better UX
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -47,3 +47,11 @@ export function TaskList({ tasks, onDelete, onToggle, onEdit, loading }: TaskLis
     </div>
   );
 }
+
+// This component displays a list of tasks with loading spinner and empty states.
+// It uses the TaskItem component to render each individual task.
+// Props include the tasks array and callback functions for delete, toggle, and edit actions.
+// The loading prop indicates whether to show a loading spinner while data is being fetched.
+// If there are no tasks, an empty state message is displayed.
+// The component is styled using Tailwind CSS for a clean and responsive UI.
+
