@@ -7,6 +7,9 @@ export interface Task {
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
   dueDate?: string; // ISO date string for due date (optional)
+  categoryId?: number; // Category ID (optional)
+  categoryName?: string; // Category name for display
+  categoryColor?: string; // Category color for display
 }
 
 // Data required to create a new task
@@ -16,6 +19,7 @@ export interface TaskFormData {
   description: string;
   completed?: boolean; // Optional, defaults to false
   dueDate?: string; // Optional, ISO date string for due date
+  categoryId?: number; // Optional, category ID
 }
 
 // Partial form data for updates (all fields optional)

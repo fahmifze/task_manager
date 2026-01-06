@@ -33,10 +33,21 @@ export function TaskItem({ task, onDelete, onToggle, onEdit }: TaskItemProps) {
         />
 
         <div className="flex-1">
-          {/* Task Title - strikethrough if completed */}
-          <h3 className={`font-semibold text-lg ${task.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-            {task.title}
-          </h3>
+          {/* Task Title with Category Badge */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className={`font-semibold text-lg ${task.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+              {task.title}
+            </h3>
+            {/* Category Badge - only show if task has a category */}
+            {task.categoryName && (
+              <span
+                className="px-2 py-0.5 text-xs font-medium text-white rounded-full"
+                style={{ backgroundColor: task.categoryColor || '#6B7280' }}
+              >
+                {task.categoryName}
+              </span>
+            )}
+          </div>
 
           {/* Task Description - only show if exists */}
           {task.description && (

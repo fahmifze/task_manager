@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Task, TaskFormData } from '../types/task';
+import { Category } from '../types/category';
+import { categoryService } from '../services/categoryService';
 
 // Props interface for TaskForm component
 interface TaskFormProps {
@@ -13,6 +15,13 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState(''); // Title input state
   const [description, setDescription] = useState(''); // Description input state
   const [dueDate, setDueDate] = useState<string | undefined>(); // Due date input state
+  const [categoryId, setCategoryId] = useState<number | undefined>(); // Category selection state
+  const [categories, setCategories] = useState<Category[]>([]); // Available categories
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    categoryService.getAll().then(setCategories).catch(console.error);
+  }, []);
 
   // Populate form when editing, clear when creating
   useEffect(() => {
@@ -20,10 +29,12 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
       setTitle(taskToEdit.title);
       setDescription(taskToEdit.description || '');
       setDueDate(taskToEdit.dueDate);
+      setCategoryId(taskToEdit.categoryId);
     } else {
       setTitle('');
       setDescription('');
       setDueDate('');
+      setCategoryId(undefined);
     }
   }, [taskToEdit]); // Re-run when taskToEdit changes
 
@@ -37,13 +48,15 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
     const formData: TaskFormData = {
       title: title.trim(),
       description: description.trim(),
-      dueDate: dueDate ? dueDate : undefined,
+      dueDate: dueDate ? `${dueDate}T00:00:00` : undefined,
+      categoryId: categoryId,
     };
     onSubmit(formData);
     if (!taskToEdit) { // Clear form only when creating new task
       setTitle('');
       setDescription('');
       setDueDate('');
+      setCategoryId(undefined);
     }
   };
 
@@ -52,6 +65,7 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
     setTitle('');
     setDescription('');
     setDueDate('');
+    setCategoryId(undefined);
     onCancel?.(); // Call onCancel if provided
   };
 
@@ -106,6 +120,27 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+
+      {/* Category Dropdown */}
+      <div className="mb-4">
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          Category
+        </label>
+        <select
+          id="category"
+          value={categoryId || ''}
+          onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">No Category</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Action Buttons */}
       <div className="flex gap-2">
         <button

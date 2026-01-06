@@ -29,6 +29,10 @@ public class Task {
      @Column(name = "due_date") // Maps to due_date column
     private LocalDateTime dueDate; //store due date time
 
+    @ManyToOne(fetch = FetchType.LAZY) // Many tasks can belong to one category
+    @JoinColumn(name = "category_id") // Foreign key column in tasks table
+    private Category category; // The category this task belongs to
+
     @PrePersist // Runs before first save a new task 
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -69,4 +73,7 @@ public class Task {
 
     public LocalDateTime getDueDate() { return dueDate; } // get due date timestamp
     public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; } // set due date timestamp
+
+    public Category getCategory() { return category; } // get category
+    public void setCategory(Category category) { this.category = category; } // set category
 }

@@ -44,6 +44,8 @@ public class CategoryService {
         return categoryRepository.findById(id) //same from getCategoryById which find it first using id
                 .map(existingCategory -> {
                     existingCategory.setName(categoryDTO.getName()); // change name
+                    existingCategory.setColor(categoryDTO.getColor()); // change color
+                    existingCategory.setDescription(categoryDTO.getDescription()); // change description
                     Category updatedCategory = categoryRepository.save(existingCategory); // Save changes
                     return CategoryDTO.fromEntity(updatedCategory);
                 })

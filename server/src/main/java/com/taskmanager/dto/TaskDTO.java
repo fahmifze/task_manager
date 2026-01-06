@@ -7,13 +7,16 @@ import java.time.LocalDateTime; // For timestamp fields
 public class TaskDTO {
 
     // Fields matching Task entity
-    private Long id; 
+    private Long id;
     private String title;
     private String description;
     private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime dueDate;
+    private Long categoryId; // Category ID for the task
+    private String categoryName; // Category name for display
+    private String categoryColor; // Category color for display
 
     public TaskDTO() {} // Required for JSON deserialization, an empty constructor, cannot create object without this
 
@@ -31,7 +34,7 @@ public class TaskDTO {
     }
 
     // Convert Entity to DTO (for API responses)
-    public static TaskDTO fromEntity(com.taskmanager.entity.Task task) { // static method to convert entity to dto, more clean 
+    public static TaskDTO fromEntity(com.taskmanager.entity.Task task) { // static method to convert entity to dto, more clean
         TaskDTO dto = new TaskDTO(); // Create new DTO object
         dto.setId(task.getId());
         dto.setTitle(task.getTitle());
@@ -40,6 +43,12 @@ public class TaskDTO {
         dto.setCreatedAt(task.getCreatedAt());
         dto.setUpdatedAt(task.getUpdatedAt());
         dto.setDueDate(task.getDueDate());
+        // Set category info if task has a category
+        if (task.getCategory() != null) {
+            dto.setCategoryId(task.getCategory().getId());
+            dto.setCategoryName(task.getCategory().getName());
+            dto.setCategoryColor(task.getCategory().getColor());
+        }
         return dto;
     }
 
@@ -78,6 +87,15 @@ public class TaskDTO {
 
     public LocalDateTime getDueDate() { return dueDate; }
     public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+
+    public String getCategoryColor() { return categoryColor; }
+    public void setCategoryColor(String categoryColor) { this.categoryColor = categoryColor; }
 }
 
 //SOME EXTRA NOTES TO UNDERSTAND DTO

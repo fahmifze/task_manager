@@ -2,7 +2,9 @@ package com.taskmanager.service;
 
 import com.taskmanager.dto.TaskDTO;
 import com.taskmanager.entity.Task;
+import com.taskmanager.entity.Category;
 import com.taskmanager.repository.TaskRepository;
+import com.taskmanager.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +14,12 @@ import java.util.stream.Collectors;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final CategoryRepository categoryRepository;
 
-    // Constructor injection - Spring auto-injects TaskRepository
-    public TaskService(TaskRepository taskRepository) {
+    // Constructor injection - Spring auto-injects repositories
+    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository) {
         this.taskRepository = taskRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     // Get all tasks ordered by creation date (newest first)
@@ -36,6 +40,11 @@ public class TaskService {
     // Create a new task
     public TaskDTO createTask(TaskDTO taskDTO) {
         Task task = taskDTO.toEntity(); // Convert DTO to entity
+        // Set category if categoryId is provided
+        if (taskDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(taskDTO.getCategoryId()).orElse(null);
+            task.setCategory(category);
+        }
         Task savedTask = taskRepository.save(task); // Save to database
         return TaskDTO.fromEntity(savedTask); // Return saved task as DTO
     }
@@ -47,6 +56,13 @@ public class TaskService {
                     existingTask.setTitle(taskDTO.getTitle()); // change title
                     existingTask.setDescription(taskDTO.getDescription()); // change description
                     existingTask.setCompleted(taskDTO.isCompleted()); // change status
+                    // Update category if categoryId is provided
+                    if (taskDTO.getCategoryId() != null) {
+                        Category category = categoryRepository.findById(taskDTO.getCategoryId()).orElse(null);
+                        existingTask.setCategory(category);
+                    } else {
+                        existingTask.setCategory(null); // Remove category if not provided
+                    }
                     Task updatedTask = taskRepository.save(existingTask); // Save changes
                     return TaskDTO.fromEntity(updatedTask);
                 })
