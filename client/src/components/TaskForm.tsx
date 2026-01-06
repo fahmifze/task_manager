@@ -49,9 +49,15 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
   const handleCancel = () => {
     setTitle('');
     setDescription('');
+    setDueDate('');
     onCancel?.(); // Call onCancel if provided
   };
 
+  const formData : TaskFormData = {
+    title : title.trim(),
+    description : description.trim(),
+    dueDate : dueDate ? dueDate : undefined,
+  };
   const isEditing = !!taskToEdit; // Check if in edit mode
 
   return (
