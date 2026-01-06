@@ -28,7 +28,7 @@ public class TaskService {
 
     // Get single task by ID, returns null if not found
     public TaskDTO getTaskById(Long id) {
-        return taskRepository.findById(id)
+        return taskRepository.findById(id) // Find by ID but sometimes not found and returns Optional
                 .map(TaskDTO::fromEntity) // Convert to DTO if found
                 .orElse(null); // Return null if not found
     }
@@ -42,11 +42,11 @@ public class TaskService {
 
     // Update existing task
     public TaskDTO updateTask(Long id, TaskDTO taskDTO) {
-        return taskRepository.findById(id)
+        return taskRepository.findById(id) //same from getTaskById which find it first using id
                 .map(existingTask -> {
-                    existingTask.setTitle(taskDTO.getTitle()); // Update title
-                    existingTask.setDescription(taskDTO.getDescription()); // Update description
-                    existingTask.setCompleted(taskDTO.isCompleted()); // Update status
+                    existingTask.setTitle(taskDTO.getTitle()); // change title
+                    existingTask.setDescription(taskDTO.getDescription()); // change description
+                    existingTask.setCompleted(taskDTO.isCompleted()); // change status
                     Task updatedTask = taskRepository.save(existingTask); // Save changes
                     return TaskDTO.fromEntity(updatedTask);
                 })
@@ -55,11 +55,11 @@ public class TaskService {
 
     // Delete task by ID, returns true if deleted
     public boolean deleteTask(Long id) {
-        if (taskRepository.existsById(id)) {
-            taskRepository.deleteById(id);
-            return true;
+        if (taskRepository.existsById(id)) { // Check if task exists
+            taskRepository.deleteById(id);  // Delete the task
+            return true; // Deletion successful
         }
-        return false;
+        return false;   // Task not found
     }
 
     // Toggle task completion status (complete <-> incomplete)
@@ -67,25 +67,25 @@ public class TaskService {
         return taskRepository.findById(id)
                 .map(task -> {
                     task.setCompleted(!task.isCompleted()); // Flip the status
-                    Task updatedTask = taskRepository.save(task);
-                    return TaskDTO.fromEntity(updatedTask);
+                    Task updatedTask = taskRepository.save(task); // Save changes
+                    return TaskDTO.fromEntity(updatedTask); // Return updated task as DTO
                 })
                 .orElse(null);
     }
 
     // Search tasks by title (case-insensitive)
     public List<TaskDTO> searchTasks(String keyword) {
-        return taskRepository.findByTitleContainingIgnoreCase(keyword)
-                .stream()
-                .map(TaskDTO::fromEntity)
-                .collect(Collectors.toList());
+        return taskRepository.findByTitleContainingIgnoreCase(keyword) //search using keyword eg "buy"
+                .stream() // Convert list to stream for processing
+                .map(TaskDTO::fromEntity) // Convert each Task entity to DTO
+                .collect(Collectors.toList()); // Collect back to list
     }
 
     // Get only incomplete tasks
-    public List<TaskDTO> getIncompleteTasks() {
-        return taskRepository.findByCompletedFalseOrderByCreatedAtDesc()
-                .stream()
-                .map(TaskDTO::fromEntity)
-                .collect(Collectors.toList());
+    public List<TaskDTO> getIncompleteTasks() { // return tasks where completed = false
+        return taskRepository.findByCompletedFalseOrderByCreatedAtDesc() // get incomplete tasks
+                .stream() // Convert list to stream for processing
+                .map(TaskDTO::fromEntity)   // Convert each Task entity to DTO
+                .collect(Collectors.toList());  // Collect back to list
     }
 }

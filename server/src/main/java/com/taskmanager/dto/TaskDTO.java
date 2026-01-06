@@ -1,32 +1,36 @@
-package com.taskmanager.dto;
+package com.taskmanager.dto; // Data Transfer Object for Task 
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; // For timestamp fields
 
 // DTO (Data Transfer Object) - Used for API request/response data
+// starts of the class dto is hereeeeee
 public class TaskDTO {
 
-    private Long id;
+    // Fields matching Task entity
+    private Long id; 
     private String title;
     private String description;
     private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public TaskDTO() {} // Required for JSON deserialization
+    public TaskDTO() {} // Required for JSON deserialization, an empty constructor, cannot create object without this
 
     public TaskDTO(Long id, String title, String description, boolean completed,
-                   LocalDateTime createdAt, LocalDateTime updatedAt) {
+                   LocalDateTime createdAt, LocalDateTime updatedAt) { // A constructor with all fields
+        
+        // Assign parameters to fields
         this.id = id;
         this.title = title;
         this.description = description;
         this.completed = completed;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.updatedAt = updatedAt; 
     }
 
     // Convert Entity to DTO (for API responses)
-    public static TaskDTO fromEntity(com.taskmanager.entity.Task task) {
-        TaskDTO dto = new TaskDTO();
+    public static TaskDTO fromEntity(com.taskmanager.entity.Task task) { // static method to convert entity to dto, more clean 
+        TaskDTO dto = new TaskDTO(); // Create new DTO object
         dto.setId(task.getId());
         dto.setTitle(task.getTitle());
         dto.setDescription(task.getDescription());
@@ -37,8 +41,8 @@ public class TaskDTO {
     }
 
     // Convert DTO to Entity (for database operations)
-    public com.taskmanager.entity.Task toEntity() {
-        com.taskmanager.entity.Task task = new com.taskmanager.entity.Task();
+    public com.taskmanager.entity.Task toEntity() { // convert dto to entity so that can save to database
+        com.taskmanager.entity.Task task = new com.taskmanager.entity.Task(); // Create new Task entity object
         task.setId(this.id);
         task.setTitle(this.title);
         task.setDescription(this.description);
@@ -47,6 +51,9 @@ public class TaskDTO {
     }
 
     // Getters and Setters
+    // spring use this to get and set values
+    // will to convert JSON -> object and object -> JSON
+    //WITHOUT THIS SPRING WILL NOT BE ABLE TO MAP THE FIELDS PROPERLY
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -65,3 +72,17 @@ public class TaskDTO {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
+
+//SOME EXTRA NOTES TO UNDERSTAND DTO
+// React sends:     { "title": "Buy milk" }
+//                         ↓
+// Spring:          new TaskDTO() → setTitle("Buy milk")
+//                         ↓
+// Service:         taskDTO.toEntity() → Task object
+//                         ↓
+// Repository:      save(task) → INSERT INTO tasks...
+//                         ↓
+// Service:         TaskDTO.fromEntity(savedTask)
+//                         ↓
+// React receives:  { "id": 1, "title": "Buy milk", "completed": false, ... }
+
