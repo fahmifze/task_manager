@@ -2,6 +2,8 @@ package com.taskmanager.entity;
 
 import jakarta.persistence.*; //DB annotations
 import java.time.LocalDateTime; // For timestamp fields
+import java.util.HashSet; // For Set collection
+import java.util.Set; // For Set interface
 
 @Entity // Marks this class as a JPA entity/database table
 @Table(name = "tasks") // Maps to "tasks" table in database
@@ -32,6 +34,14 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY) // Many tasks can belong to one category
     @JoinColumn(name = "category_id") // Foreign key column in tasks table
     private Category category; // The category this task belongs to
+
+    @ManyToMany // Many tasks can have many tags
+    @JoinTable(
+        name = "task_tags", // Join table name
+        joinColumns = @JoinColumn(name = "task_id"), // Foreign key to tasks
+        inverseJoinColumns = @JoinColumn(name = "tag_id") // Foreign key to tags
+    )
+    private Set<Tag> tags = new HashSet<>(); // Tags assigned to this task
 
     @PrePersist // Runs before first save a new task 
     protected void onCreate() {
@@ -76,4 +86,7 @@ public class Task {
 
     public Category getCategory() { return category; } // get category
     public void setCategory(Category category) { this.category = category; } // set category
+
+    public Set<Tag> getTags() { return tags; } // get tags
+    public void setTags(Set<Tag> tags) { this.tags = tags; } // set tags
 }

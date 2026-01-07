@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Task, TaskFormData } from '../types/task';
 import { Category } from '../types/category';
+import { Tag } from '../types/tag';
 import { categoryService } from '../services/categoryService';
+import { tagService } from '../services/tagService';
 
 // Props interface for TaskForm component
 interface TaskFormProps {
@@ -17,10 +19,13 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
   const [dueDate, setDueDate] = useState<string | undefined>(); // Due date input state
   const [categoryId, setCategoryId] = useState<number | undefined>(); // Category selection state
   const [categories, setCategories] = useState<Category[]>([]); // Available categories
+  const [tags, setTags] = useState<Tag[]>([]); // Available tags
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]); // Selected tag IDs
 
-  // Fetch categories on component mount
+  // Fetch categories and tags on component mount
   useEffect(() => {
     categoryService.getAll().then(setCategories).catch(console.error);
+    tagService.getAll().then(setTags).catch(console.error);
   }, []);
 
   // Populate form when editing, clear when creating
@@ -30,11 +35,13 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
       setDescription(taskToEdit.description || '');
       setDueDate(taskToEdit.dueDate);
       setCategoryId(taskToEdit.categoryId);
+      setSelectedTagIds(taskToEdit.tagIds || []);
     } else {
       setTitle('');
       setDescription('');
       setDueDate('');
       setCategoryId(undefined);
+      setSelectedTagIds([]);
     }
   }, [taskToEdit]); // Re-run when taskToEdit changes
 
@@ -50,6 +57,7 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
       description: description.trim(),
       dueDate: dueDate ? `${dueDate}T00:00:00` : undefined,
       categoryId: categoryId,
+      tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
     };
     onSubmit(formData);
     if (!taskToEdit) { // Clear form only when creating new task
@@ -57,6 +65,7 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
       setDescription('');
       setDueDate('');
       setCategoryId(undefined);
+      setSelectedTagIds([]);
     }
   };
 
@@ -66,7 +75,17 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
     setDescription('');
     setDueDate('');
     setCategoryId(undefined);
+    setSelectedTagIds([]);
     onCancel?.(); // Call onCancel if provided
+  };
+
+  // Handle tag checkbox change
+  const handleTagChange = (tagId: number) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId) // Remove if already selected
+        : [...prev, tagId] // Add if not selected
+    );
   };
 
   const isEditing = !!taskToEdit; // Check if in edit mode
@@ -140,6 +159,35 @@ export function TaskForm({ onSubmit, taskToEdit, onCancel }: TaskFormProps) {
           ))}
         </select>
       </div>
+
+      {/* Tags Checkboxes */}
+      {tags.length > 0 && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tags
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <label
+                key={tag.id}
+                className={`inline-flex items-center px-3 py-1 rounded-full cursor-pointer border transition-colors ${
+                  selectedTagIds.includes(tag.id)
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedTagIds.includes(tag.id)}
+                  onChange={() => handleTagChange(tag.id)}
+                  className="sr-only"
+                />
+                {tag.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-2">

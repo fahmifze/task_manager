@@ -1,3 +1,5 @@
+import { Tag } from './tag'; // Import Tag type
+
 // Task entity returned from API (matches backend DTO)
 export interface Task {
   id: number; // Unique identifier
@@ -10,6 +12,8 @@ export interface Task {
   categoryId?: number; // Category ID (optional)
   categoryName?: string; // Category name for display
   categoryColor?: string; // Category color for display
+  tagIds?: number[]; // Tag IDs (optional)
+  tags?: Tag[]; // Tags for display (optional)
 }
 
 // Data required to create a new task
@@ -20,6 +24,7 @@ export interface TaskFormData {
   completed?: boolean; // Optional, defaults to false
   dueDate?: string; // Optional, ISO date string for due date
   categoryId?: number; // Optional, category ID
+  tagIds?: number[]; // Optional, array of tag IDs
 }
 
 // Partial form data for updates (all fields optional)

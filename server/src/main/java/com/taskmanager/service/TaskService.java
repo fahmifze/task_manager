@@ -3,11 +3,15 @@ package com.taskmanager.service;
 import com.taskmanager.dto.TaskDTO;
 import com.taskmanager.entity.Task;
 import com.taskmanager.entity.Category;
+import com.taskmanager.entity.Tag;
 import com.taskmanager.repository.TaskRepository;
 import com.taskmanager.repository.CategoryRepository;
+import com.taskmanager.repository.TagRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Service // Marks this as a service component for business logic
@@ -15,11 +19,13 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
 
     // Constructor injection - Spring auto-injects repositories
-    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository) {
+    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository, TagRepository tagRepository) {
         this.taskRepository = taskRepository;
         this.categoryRepository = categoryRepository;
+        this.tagRepository = tagRepository;
     }
 
     // Get all tasks ordered by creation date (newest first)
@@ -45,6 +51,11 @@ public class TaskService {
             Category category = categoryRepository.findById(taskDTO.getCategoryId()).orElse(null);
             task.setCategory(category);
         }
+        // Set tags if tagIds are provided
+        if (taskDTO.getTagIds() != null && !taskDTO.getTagIds().isEmpty()) {
+            Set<Tag> tags = new HashSet<>(tagRepository.findAllById(taskDTO.getTagIds()));
+            task.setTags(tags);
+        }
         Task savedTask = taskRepository.save(task); // Save to database
         return TaskDTO.fromEntity(savedTask); // Return saved task as DTO
     }
@@ -62,6 +73,13 @@ public class TaskService {
                         existingTask.setCategory(category);
                     } else {
                         existingTask.setCategory(null); // Remove category if not provided
+                    }
+                    // Update tags if tagIds are provided
+                    if (taskDTO.getTagIds() != null && !taskDTO.getTagIds().isEmpty()) {
+                        Set<Tag> tags = new HashSet<>(tagRepository.findAllById(taskDTO.getTagIds()));
+                        existingTask.setTags(tags);
+                    } else {
+                        existingTask.setTags(new HashSet<>()); // Clear tags if none provided
                     }
                     Task updatedTask = taskRepository.save(existingTask); // Save changes
                     return TaskDTO.fromEntity(updatedTask);

@@ -1,6 +1,9 @@
 package com.taskmanager.dto; // Data Transfer Object for Task 
 
 import java.time.LocalDateTime; // For timestamp fields
+import java.util.List; // For List collection
+import java.util.ArrayList; // For ArrayList implementation
+import java.util.stream.Collectors; // For stream operations
 
 // DTO (Data Transfer Object) - Used for API request/response data
 // starts of the class dto is hereeeeee
@@ -17,6 +20,8 @@ public class TaskDTO {
     private Long categoryId; // Category ID for the task
     private String categoryName; // Category name for display
     private String categoryColor; // Category color for display
+    private List<Long> tagIds = new ArrayList<>(); // Tag IDs for input (when creating/updating)
+    private List<TagDTO> tags = new ArrayList<>(); // Tag DTOs for output (when returning)
 
     public TaskDTO() {} // Required for JSON deserialization, an empty constructor, cannot create object without this
 
@@ -48,6 +53,15 @@ public class TaskDTO {
             dto.setCategoryId(task.getCategory().getId());
             dto.setCategoryName(task.getCategory().getName());
             dto.setCategoryColor(task.getCategory().getColor());
+        }
+        // Set tags info if task has tags
+        if (task.getTags() != null && !task.getTags().isEmpty()) {
+            dto.setTags(task.getTags().stream()
+                    .map(TagDTO::fromEntity)
+                    .collect(Collectors.toList()));
+            dto.setTagIds(task.getTags().stream()
+                    .map(tag -> tag.getId())
+                    .collect(Collectors.toList()));
         }
         return dto;
     }
@@ -96,6 +110,12 @@ public class TaskDTO {
 
     public String getCategoryColor() { return categoryColor; }
     public void setCategoryColor(String categoryColor) { this.categoryColor = categoryColor; }
+
+    public List<Long> getTagIds() { return tagIds; }
+    public void setTagIds(List<Long> tagIds) { this.tagIds = tagIds; }
+
+    public List<TagDTO> getTags() { return tags; }
+    public void setTags(List<TagDTO> tags) { this.tags = tags; }
 }
 
 //SOME EXTRA NOTES TO UNDERSTAND DTO

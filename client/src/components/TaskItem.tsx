@@ -47,6 +47,15 @@ export function TaskItem({ task, onDelete, onToggle, onEdit }: TaskItemProps) {
                 {task.categoryName}
               </span>
             )}
+            {/* Tag Badges - show if task has tags */}
+            {task.tags && task.tags.length > 0 && task.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full"
+              >
+                {tag.name}
+              </span>
+            ))}
           </div>
 
           {/* Task Description - only show if exists */}
