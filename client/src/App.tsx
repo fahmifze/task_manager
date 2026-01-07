@@ -1,5 +1,6 @@
 import { TasksPage } from './pages/TasksPage';
 import { CategoriesPage } from './pages/CategoriesPage';
+import { TagsPage } from './pages/TagsPage';
 // Root component of the React application
 function App() {
 
@@ -11,6 +12,7 @@ function App() {
       <main className="p-4">
         <TasksPage />
         <CategoriesPage />
+        <TagsPage />
       </main>
     </div>
   );
