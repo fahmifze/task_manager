@@ -26,17 +26,26 @@ task-manager/
 └── server/                     # Spring Boot Backend
     ├── src/main/java/com/taskmanager/
     │   ├── config/
-    │   │   └── CorsConfig.java
+    │   │   ├── CorsConfig.java       # CORS settings
+    │   │   ├── SecurityConfig.java   # Spring Security config
+    │   │   └── JwtAuthFilter.java    # JWT token filter
     │   ├── controller/
-    │   │   └── TaskController.java
+    │   │   ├── TaskController.java   # Task endpoints
+    │   │   └── AuthController.java   # Login/register endpoints
     │   ├── dto/
-    │   │   └── TaskDTO.java
+    │   │   ├── TaskDTO.java          # Task data transfer
+    │   │   ├── AuthRequestDTO.java   # Login/register request
+    │   │   └── AuthResponseDTO.java  # Auth response with token
     │   ├── entity/
-    │   │   └── Task.java
+    │   │   ├── Task.java             # Task table
+    │   │   └── User.java             # User table
     │   ├── repository/
-    │   │   └── TaskRepository.java
+    │   │   ├── TaskRepository.java   # Task queries
+    │   │   └── UserRepository.java   # User queries
     │   ├── service/
-    │   │   └── TaskService.java
+    │   │   ├── TaskService.java      # Task business logic
+    │   │   ├── AuthService.java      # Auth business logic
+    │   │   └── JwtService.java       # JWT token operations
     │   └── TaskManagerApplication.java
     ├── src/main/resources/
     │   └── application.yml
@@ -98,6 +107,8 @@ Go to http://localhost:5173 and start using the app!
 
 ## API Endpoints
 
+### Task Endpoints
+
 | Method | URL | Description |
 |--------|-----|-------------|
 | GET | /api/tasks | Get all tasks |
@@ -107,6 +118,40 @@ Go to http://localhost:5173 and start using the app!
 | DELETE | /api/tasks/{id} | Delete task |
 | PUT | /api/tasks/{id}/toggle | Toggle completion |
 | GET | /api/tasks/search?keyword=... | Search tasks |
+
+### Authentication Endpoints
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| POST | /api/auth/register | Register new user |
+| POST | /api/auth/login | Login and get JWT token |
+
+**Register Request:**
+```json
+{
+  "username": "john",
+  "email": "john@example.com",
+  "password": "mypassword123"
+}
+```
+
+**Login Request:**
+```json
+{
+  "email": "john@example.com",
+  "password": "mypassword123"
+}
+```
+
+**Response (both endpoints):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "username": "john",
+  "email": "john@example.com",
+  "message": "registered"
+}
+```
 
 ---
 
@@ -133,8 +178,29 @@ User Action → Component → Service → Backend API
   onChange    useState    fetch() to Spring Boot
 ```
 
+### JWT Authentication Flow
+
+```
+1. User registers/logs in
+         ↓
+2. Server validates credentials
+         ↓
+3. Server generates JWT token
+         ↓
+4. Client stores token (localStorage)
+         ↓
+5. Client sends token with every request
+   Header: "Authorization: Bearer <token>"
+         ↓
+6. JwtAuthFilter validates token
+         ↓
+7. If valid → allow access
+   If invalid → deny access (401)
+```
+
 ### Key Files to Study
 
+**Task CRUD:**
 1. **Task.java** - How database tables are defined
 2. **TaskRepository.java** - How queries are created from method names
 3. **TaskService.java** - Where business logic lives
@@ -142,28 +208,37 @@ User Action → Component → Service → Backend API
 5. **taskService.ts** - How frontend calls backend
 6. **TasksPage.tsx** - How React state management works
 
+**Authentication (JWT):**
+1. **User.java** - User entity with email/password
+2. **AuthController.java** - Login/register endpoints
+3. **AuthService.java** - Registration and login logic
+4. **JwtService.java** - Token generation and validation
+5. **JwtAuthFilter.java** - Intercepts requests to check tokens
+6. **SecurityConfig.java** - Which endpoints need auth
+
 ---
 
-## Next Steps: Phase 2
+## Completed Features
 
-After studying this code, you'll build **Category CRUD**:
+- ✅ Task CRUD (Create, Read, Update, Delete)
+- ✅ Category management
+- ✅ Tag management
+- ✅ JWT Authentication (register/login)
 
-**Backend:**
-- Category.java (Entity)
-- CategoryRepository.java
-- CategoryService.java
-- CategoryController.java
-- CategoryDTO.java
+## Next Steps: Phase 3
 
-**Frontend:**
-- types/category.ts
-- services/categoryService.ts
-- components/CategoryItem.tsx
-- components/CategoryForm.tsx
-- components/CategoryList.tsx
-- pages/CategoriesPage.tsx
+After studying this code, you can add:
 
-The pattern is the same - that's the point!
+**Protect endpoints:**
+- Make tasks belong to specific users
+- Only show user's own tasks
+- Require authentication for task operations
+
+**Frontend auth:**
+- Login/Register pages
+- Store JWT token
+- Send token with requests
+- Protected routes
 
 ---
 
@@ -185,3 +260,8 @@ Add Maven to your PATH environment variable.
 ### Frontend can't connect to backend
 1. Check backend is running (http://localhost:8080/api/tasks)
 2. Check CORS config allows frontend origin
+
+### JWT token issues
+1. Token expires after 24 hours - login again
+2. Make sure to include "Bearer " prefix in Authorization header
+3. Check browser localStorage for stored token
