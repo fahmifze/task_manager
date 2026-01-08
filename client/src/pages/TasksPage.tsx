@@ -3,13 +3,15 @@ import { Task, TaskFormData } from '../types/task'; // import Task and TaskFormD
 import { taskService } from '../services/taskService'; // import taskService for API calls
 import { TaskForm } from '../components/TaskForm'; // import TaskForm component
 import { TaskList } from '../components/TaskList'; // import TaskList component
+import { useAuth } from '../context/AuthContext';
+
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]); // State to hold list of tasks
   const [loading, setLoading] = useState(true); // State to track loading status
   const [error, setError] = useState<string | null>(null);  // State to hold error messages
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);  // State to hold task being edited
-
+  const {user, logout} = useAuth();
   // Fetch tasks on component mount
   useEffect(() => {
     fetchTasks(); 
@@ -91,9 +93,24 @@ export function TasksPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-2xl mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-          Task Manager
-        </h1>
+
+        {/* Header with User Info & Logout */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Task Manager
+          </h1>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-600">
+              Hello, {user?.username}!
+            </span>
+            <button
+              onClick={logout}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
