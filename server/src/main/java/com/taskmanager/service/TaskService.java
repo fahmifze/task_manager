@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
+import com.taskmanager.entity.User; // Import User
+
 @Service // Marks this as a service component for business logic
 public class TaskService {
 
@@ -22,104 +24,126 @@ public class TaskService {
     private final TagRepository tagRepository;
 
     // Constructor injection - Spring auto-injects repositories
-    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository, TagRepository tagRepository) {
+    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository,
+            TagRepository tagRepository) {
         this.taskRepository = taskRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
     }
 
-    // Get all tasks ordered by creation date (newest first)
-    public List<TaskDTO> getAllTasks() {
-        return taskRepository.findAllByOrderByCreatedAtDesc()
-                .stream() // Convert list to stream for processing
-                .map(TaskDTO::fromEntity) // Convert each Task entity to DTO
-                .collect(Collectors.toList()); // Collect back to list
+    // Get all tasks for a specific user
+    public List<TaskDTO> getAllTasks(User user) {
+        return taskRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(TaskDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    // Get single task by ID, returns null if not found
-    public TaskDTO getTaskById(Long id) {
-        return taskRepository.findById(id) // Find by ID but sometimes not found and returns Optional
-                .map(TaskDTO::fromEntity) // Convert to DTO if found
-                .orElse(null); // Return null if not found
+    // Get single task by ID for a specific user
+    public TaskDTO getTaskById(Long id, User user) {
+        return taskRepository.findById(id)
+                .filter(task -> task.getUser().getId().equals(user.getId())) // Ensure ownership
+                .map(TaskDTO::fromEntity)
+                .orElse(null);
     }
 
-    // Create a new task
-    public TaskDTO createTask(TaskDTO taskDTO) {
-        Task task = taskDTO.toEntity(); // Convert DTO to entity
+    // Create a new task for a specific user
+    public TaskDTO createTask(TaskDTO taskDTO, User user) {
+        Task task = taskDTO.toEntity();
+        task.setUser(user); // Set the owner
+
         // Set category if categoryId is provided
         if (taskDTO.getCategoryId() != null) {
-            Category category = categoryRepository.findById(taskDTO.getCategoryId()).orElse(null);
+            Category category = categoryRepository.findById(taskDTO.getCategoryId())
+                    // Ensure the category also belongs to the user, or is global?
+                    // For safely, better to check if category belongs to user.
+                    // But for now let's assume valid category ID passed or just simple find.
+                    // Ideally: categoryRepository.findByIdAndUserId(...)
+                    .orElse(null);
+
+            // Basic check if category belongs to user if found
+            if (category != null && !category.getUser().getId().equals(user.getId())) {
+                category = null; // Prevent assigning other user's category
+            }
             task.setCategory(category);
         }
-        // Set tags if tagIds are provided
+        // Set tags
         if (taskDTO.getTagIds() != null && !taskDTO.getTagIds().isEmpty()) {
             Set<Tag> tags = new HashSet<>(tagRepository.findAllById(taskDTO.getTagIds()));
             task.setTags(tags);
         }
-        Task savedTask = taskRepository.save(task); // Save to database
-        return TaskDTO.fromEntity(savedTask); // Return saved task as DTO
+        Task savedTask = taskRepository.save(task);
+        return TaskDTO.fromEntity(savedTask);
     }
 
-    // Update existing task
-    public TaskDTO updateTask(Long id, TaskDTO taskDTO) {
-        return taskRepository.findById(id) //same from getTaskById which find it first using id
+    // Update existing task for a specific user
+    public TaskDTO updateTask(Long id, TaskDTO taskDTO, User user) {
+        return taskRepository.findById(id)
+                .filter(task -> task.getUser().getId().equals(user.getId())) // Ensure ownership
                 .map(existingTask -> {
-                    existingTask.setTitle(taskDTO.getTitle()); // change title
-                    existingTask.setDescription(taskDTO.getDescription()); // change description
-                    existingTask.setCompleted(taskDTO.isCompleted()); // change status
-                    // Update category if categoryId is provided
+                    existingTask.setTitle(taskDTO.getTitle());
+                    existingTask.setDescription(taskDTO.getDescription());
+                    existingTask.setCompleted(taskDTO.isCompleted());
+
                     if (taskDTO.getCategoryId() != null) {
                         Category category = categoryRepository.findById(taskDTO.getCategoryId()).orElse(null);
+                        // Prevent assigning other user's category
+                        if (category != null && !category.getUser().getId().equals(user.getId())) {
+                            category = null;
+                        }
                         existingTask.setCategory(category);
                     } else {
-                        existingTask.setCategory(null); // Remove category if not provided
+                        existingTask.setCategory(null);
                     }
-                    // Update tags if tagIds are provided
+
                     if (taskDTO.getTagIds() != null && !taskDTO.getTagIds().isEmpty()) {
                         Set<Tag> tags = new HashSet<>(tagRepository.findAllById(taskDTO.getTagIds()));
                         existingTask.setTags(tags);
                     } else {
-                        existingTask.setTags(new HashSet<>()); // Clear tags if none provided
+                        existingTask.setTags(new HashSet<>());
                     }
-                    Task updatedTask = taskRepository.save(existingTask); // Save changes
+                    Task updatedTask = taskRepository.save(existingTask);
                     return TaskDTO.fromEntity(updatedTask);
-                })
-                .orElse(null); // Return null if task not found
-    }
-
-    // Delete task by ID, returns true if deleted
-    public boolean deleteTask(Long id) {
-        if (taskRepository.existsById(id)) { // Check if task exists
-            taskRepository.deleteById(id);  // Delete the task
-            return true; // Deletion successful
-        }
-        return false;   // Task not found
-    }
-
-    // Toggle task completion status (complete <-> incomplete)
-    public TaskDTO toggleTaskCompletion(Long id) {
-        return taskRepository.findById(id)
-                .map(task -> {
-                    task.setCompleted(!task.isCompleted()); // Flip the status
-                    Task updatedTask = taskRepository.save(task); // Save changes
-                    return TaskDTO.fromEntity(updatedTask); // Return updated task as DTO
                 })
                 .orElse(null);
     }
 
-    // Search tasks by title (case-insensitive)
-    public List<TaskDTO> searchTasks(String keyword) {
-        return taskRepository.findByTitleContainingIgnoreCase(keyword) //search using keyword eg "buy"
-                .stream() // Convert list to stream for processing
-                .map(TaskDTO::fromEntity) // Convert each Task entity to DTO
-                .collect(Collectors.toList()); // Collect back to list
+    // Delete task by ID for a specific user
+    public boolean deleteTask(Long id, User user) {
+        return taskRepository.findById(id)
+                .filter(task -> task.getUser().getId().equals(user.getId()))
+                .map(task -> {
+                    taskRepository.delete(task);
+                    return true;
+                })
+                .orElse(false);
     }
 
-    // Get only incomplete tasks
-    public List<TaskDTO> getIncompleteTasks() { // return tasks where completed = false
-        return taskRepository.findByCompletedFalseOrderByCreatedAtDesc() // get incomplete tasks
-                .stream() // Convert list to stream for processing
-                .map(TaskDTO::fromEntity)   // Convert each Task entity to DTO
-                .collect(Collectors.toList());  // Collect back to list
+    // Toggle task completion status
+    public TaskDTO toggleTaskCompletion(Long id, User user) {
+        return taskRepository.findById(id)
+                .filter(task -> task.getUser().getId().equals(user.getId()))
+                .map(task -> {
+                    task.setCompleted(!task.isCompleted());
+                    Task updatedTask = taskRepository.save(task);
+                    return TaskDTO.fromEntity(updatedTask);
+                })
+                .orElse(null);
+    }
+
+    // Search tasks by title for a specific user
+    public List<TaskDTO> searchTasks(String keyword, User user) {
+        return taskRepository.findByUserIdAndTitleContainingIgnoreCase(user.getId(), keyword)
+                .stream()
+                .map(TaskDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // Get incomplete tasks for a specific user
+    public List<TaskDTO> getIncompleteTasks(User user) {
+        return taskRepository.findByUserIdAndCompletedFalseOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(TaskDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 }

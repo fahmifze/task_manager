@@ -28,26 +28,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF (Cross-Site Request Forgery) protection
-            // We don't need CSRF because we use JWT tokens (stateless)
-            .csrf(csrf -> csrf.disable())
+                // Disable CSRF (Cross-Site Request Forgery) protection
+                // We don't need CSRF because we use JWT tokens (stateless)
+                .csrf(csrf -> csrf.disable())
 
-            // Configure which endpoints need authentication
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no login required
-                .requestMatchers("/api/auth/**").permitAll() // Login/register endpoints
-                .requestMatchers("/api/categories/**").permitAll() // Categories (public for now)
-                .requestMatchers("/api/tasks/**").permitAll() // Tasks (public for now)
-                // Everything else needs authentication
-                .anyRequest().authenticated())
+                // Configure which endpoints need authentication
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - no login required
+                        .requestMatchers("/api/auth/**").permitAll() // Login/register endpoints
+                        .requestMatchers("/api/categories/**").permitAll() // Categories (public for now)
+                        .requestMatchers("/api/tasks/**").permitAll() // Tasks (public for now)
+                        .requestMatchers("/api/tags/**").permitAll() // Tags (public for now)
+                        .requestMatchers("/api/task-tags/**").permitAll() // Task-tags (public for now)
+                        // Everything else needs authentication
+                        .anyRequest().authenticated())
 
-            // Use stateless session - no cookies, only JWT tokens
-            // STATELESS = server doesn't store session, each request must have token
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Use stateless session - no cookies, only JWT tokens
+                // STATELESS = server doesn't store session, each request must have token
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Add our JWT filter BEFORE the default UsernamePasswordAuthenticationFilter
-            // This means JWT is checked first before any other auth
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // Add our JWT filter BEFORE the default UsernamePasswordAuthenticationFilter
+                // This means JWT is checked first before any other auth
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -71,28 +73,28 @@ public class SecurityConfig {
 // ============================================
 //
 // HTTP Request
-//      |
-//      v
+// |
+// v
 // +------------------+
-// | CorsFilter       | <-- Handles CORS (allows frontend to call backend)
+// | CorsFilter | <-- Handles CORS (allows frontend to call backend)
 // +------------------+
-//      |
-//      v
+// |
+// v
 // +------------------+
-// | JwtAuthFilter    | <-- Our filter (validates JWT token)
+// | JwtAuthFilter | <-- Our filter (validates JWT token)
 // +------------------+
-//      |
-//      v
+// |
+// v
 // +------------------+
-// | SecurityChain    | <-- Checks if endpoint needs auth
+// | SecurityChain | <-- Checks if endpoint needs auth
 // +------------------+
-//      |
-//      v
+// |
+// v
 // /api/auth/** → permitAll() → No auth needed
 // /api/tasks/** → permitAll() → No auth needed (for now)
 // /api/other/** → authenticated() → Must have valid token
-//      |
-//      v
+// |
+// v
 // Controller handles request
 //
 // ============================================

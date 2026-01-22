@@ -8,88 +8,94 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.taskmanager.entity.User;
+import com.taskmanager.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @RestController // Handles HTTP requests and returns JSON
 @RequestMapping("/api/tasks") // Base URL: /api/tasks
 @CrossOrigin(origins = "*") // Allow frontend on different port to call this API
 public class TaskController {
 
-    private final TaskService taskService; // Service file that handles business logic and data access
+    private final TaskService taskService;
+    private final UserRepository userRepository;
 
-    // Constructor injection - Spring auto-injects TaskService
-    public TaskController(TaskService taskService) {
+    // Constructor injection
+    public TaskController(TaskService taskService, UserRepository userRepository) {
         this.taskService = taskService;
+        this.userRepository = userRepository;
     }
 
-    // in this method it will add the endpoints for CRUD operations
+    // Helper to get authenticated user
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     @GetMapping
     public List<TaskDTO> getAllTasks() {
-        return taskService.getAllTasks();
+        return taskService.getAllTasks(getCurrentUser());
     }
 
-    // in this method it will get task by specified id only and return 404 code if not found
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id) {
-        TaskDTO task = taskService.getTaskById(id);
+        TaskDTO task = taskService.getTaskById(id, getCurrentUser());
         if (task != null) {
-            return ResponseEntity.ok(task); // 200 OK
+            return ResponseEntity.ok(task);
         }
-        return ResponseEntity.notFound().build(); // 404 Not Found
+        return ResponseEntity.notFound().build();
     }
 
-    // in this method it will search tasks by title keyword for example "buy"
     @GetMapping("/search")
     public List<TaskDTO> searchTasks(@RequestParam String keyword) {
-        return taskService.searchTasks(keyword);
+        return taskService.searchTasks(keyword, getCurrentUser());
     }
 
-    // for this method pulak it will get only incomplete tasks and return as list
     @GetMapping("/incomplete")
     public List<TaskDTO> getIncompleteTasks() {
-        return taskService.getIncompleteTasks();
+        return taskService.getIncompleteTasks(getCurrentUser());
     }
 
-    // for this method it will create new task and return 201 code as for meaning the task has been created
     @PostMapping
-    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) { // RequestBody to get JSON data from request and convert to TaskDTO
-        TaskDTO createdTask = taskService.createTask(taskDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask); // 201 Created
+    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
+        TaskDTO createdTask = taskService.createTask(taskDTO, getCurrentUser());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
-    // in this method it will update existing task by id, return 200 if okay la and return 404 code if problem
     @PutMapping("/{id}")
     public ResponseEntity<TaskDTO> updateTask(@PathVariable Long id, @RequestBody TaskDTO taskDTO) {
-        TaskDTO updatedTask = taskService.updateTask(id, taskDTO);
+        TaskDTO updatedTask = taskService.updateTask(id, taskDTO, getCurrentUser());
         if (updatedTask != null) {
-            return ResponseEntity.ok(updatedTask); // 200 OK
+            return ResponseEntity.ok(updatedTask);
         }
-        return ResponseEntity.notFound().build(); // 404 Not Found
+        return ResponseEntity.notFound().build();
     }
 
-    // PUT /api/tasks/{id}/toggle - Toggle task completion status
-    @PutMapping("/{id}/toggle") // Endpoint to toggle completion status
-    public ResponseEntity<TaskDTO> toggleTask(@PathVariable Long id) { // Get task ID from URL path
-        TaskDTO toggledTask = taskService.toggleTaskCompletion(id); // Toggle the completion status for example from true to false or false to true
+    @PutMapping("/{id}/toggle")
+    public ResponseEntity<TaskDTO> toggleTask(@PathVariable Long id) {
+        TaskDTO toggledTask = taskService.toggleTaskCompletion(id, getCurrentUser());
         if (toggledTask != null) {
-            return ResponseEntity.ok(toggledTask); // 200 OK
+            return ResponseEntity.ok(toggledTask);
         }
-        return ResponseEntity.notFound().build(); // 404 Not Found
+        return ResponseEntity.notFound().build();
     }
 
-    // in this last method in this fie it will delete task by id and return 204 code if deleted successfully or 404 code if not found
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) { // Get task ID from URL path
-        boolean deleted = taskService.deleteTask(id); // Delete the task
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        boolean deleted = taskService.deleteTask(id, getCurrentUser());
         if (deleted) {
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.notFound().build(); // 404 Not Found
+        return ResponseEntity.notFound().build();
     }
 }
 
-// React App                          Controller                    Service
-//     |                                  |                            |
-//     |-- GET /api/tasks --------------->|                            |
-//     |                                  |-- getAllTasks() ---------->|
-//     |                                  |<-- List<TaskDTO> ----------|
-//     |<-- JSON [task1, task2, ...] -----|                            |
-
+// React App Controller Service
+// | | |
+// |-- GET /api/tasks --------------->| |
+// | |-- getAllTasks() ---------->|
+// | |<-- List<TaskDTO> ----------|
+// |<-- JSON [task1, task2, ...] -----| |

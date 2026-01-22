@@ -6,15 +6,16 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository // Marks this as a data repository component
+@Repository // Marks this interface as a Spring Data JPA repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     // JpaRepository provides: findAll(), findById(), save(), deleteById(), etc.
 
-    List<Task> findByCompleted(boolean completed); // Find tasks by completion status
+    // Get all tasks for a specific user sorted by date (newest first)
+    List<Task> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    List<Task> findByTitleContainingIgnoreCase(String keyword); // Search by title (case-insensitive)
+    // Search tasks by title for a specific user (case-insensitive)
+    List<Task> findByUserIdAndTitleContainingIgnoreCase(Long userId, String title);
 
-    List<Task> findAllByOrderByCreatedAtDesc(); // Get all tasks sorted by date (newest first)
-
-    List<Task> findByCompletedFalseOrderByCreatedAtDesc(); // Get incomplete tasks sorted by date
+    // Get incomplete tasks for a specific user sorted by date
+    List<Task> findByUserIdAndCompletedFalseOrderByCreatedAtDesc(Long userId);
 }

@@ -23,27 +23,30 @@ public class Task {
     private boolean completed = false; // Default: not completed
 
     @Column(name = "created_at") // Maps to created_at column
-    private LocalDateTime createdAt; 
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at") // Maps to updated_at column
-    private LocalDateTime updatedAt; //store last date time
+    private LocalDateTime updatedAt; // store last date time
 
-     @Column(name = "due_date") // Maps to due_date column
-    private LocalDateTime dueDate; //store due date time
+    @Column(name = "due_date") // Maps to due_date column
+    private LocalDateTime dueDate; // store due date time
 
     @ManyToOne(fetch = FetchType.LAZY) // Many tasks can belong to one category
     @JoinColumn(name = "category_id") // Foreign key column in tasks table
     private Category category; // The category this task belongs to
 
     @ManyToMany // Many tasks can have many tags
-    @JoinTable(
-        name = "task_tags", // Join table name
-        joinColumns = @JoinColumn(name = "task_id"), // Foreign key to tasks
-        inverseJoinColumns = @JoinColumn(name = "tag_id") // Foreign key to tags
+    @JoinTable(name = "task_tags", // Join table name
+            joinColumns = @JoinColumn(name = "task_id"), // Foreign key to tasks
+            inverseJoinColumns = @JoinColumn(name = "tag_id") // Foreign key to tags
     )
     private Set<Tag> tags = new HashSet<>(); // Tags assigned to this task
 
-    @PrePersist // Runs before first save a new task 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @PrePersist // Runs before first save a new task
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -54,39 +57,93 @@ public class Task {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Task() {} // Required by JPA, an empty constructor
+    public Task() {
+    } // Required by JPA, an empty constructor
 
-    public Task(String title, String description) { //A constructor with title and description
+    public Task(String title, String description) { // A constructor with title and description
         this.title = title;
         this.description = description;
         this.completed = false;
     }
 
     // Getters and Setters
-    public Long getId() { return id; } //get unique ID
-    public void setId(Long id) { this.id = id; } // set unique ID
+    public Long getId() {
+        return id;
+    } // get unique ID
 
-    public String getTitle() { return title; } // get title
-    public void setTitle(String title) { this.title = title; } // set title
+    public void setId(Long id) {
+        this.id = id;
+    } // set unique ID
 
-    public String getDescription() { return description; } //get description   
-    public void setDescription(String description) { this.description = description; } // set description
+    public String getTitle() {
+        return title;
+    } // get title
 
-    public boolean isCompleted() { return completed; } // get completed status
-    public void setCompleted(boolean completed) { this.completed = completed; } // set completed status
+    public void setTitle(String title) {
+        this.title = title;
+    } // set title
 
-    public LocalDateTime getCreatedAt() { return createdAt; } // get created at timestamp
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; } // set created at timestamp
+    public String getDescription() {
+        return description;
+    } // get description
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; } // get updated at timestamp
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; } // set updated at timestamp
+    public void setDescription(String description) {
+        this.description = description;
+    } // set description
 
-    public LocalDateTime getDueDate() { return dueDate; } // get due date timestamp
-    public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; } // set due date timestamp
+    public boolean isCompleted() {
+        return completed;
+    } // get completed status
 
-    public Category getCategory() { return category; } // get category
-    public void setCategory(Category category) { this.category = category; } // set category
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    } // set completed status
 
-    public Set<Tag> getTags() { return tags; } // get tags
-    public void setTags(Set<Tag> tags) { this.tags = tags; } // set tags
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    } // get created at timestamp
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    } // set created at timestamp
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    } // get updated at timestamp
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    } // set updated at timestamp
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    } // get due date timestamp
+
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
+    } // set due date timestamp
+
+    public Category getCategory() {
+        return category;
+    } // get category
+
+    public void setCategory(Category category) {
+        this.category = category;
+    } // set category
+
+    public Set<Tag> getTags() {
+        return tags;
+    } // get tags
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+    } // set tags
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

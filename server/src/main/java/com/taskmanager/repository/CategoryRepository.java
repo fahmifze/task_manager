@@ -6,11 +6,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository // Marks this as a data repository component
+@Repository // Marks this interface as a Spring Data JPA repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    // JpaRepository provides: findAll(), findById(), save(), deleteById(), etc.
-    
-    List<Category> findByNameContainingIgnoreCase(String keyword); // Search by name (case-insensitive)
-    List<Category> findAllByOrderByCreatedAtDesc(); // Get all categories sorted by date (newest first)
+    // JpaRepository provides: save(), deleteById(), etc.
 
+    // Get all categories for a specific user sorted by creation date
+    List<Category> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    // Search by name for a specific user (case-insensitive)
+    List<Category> findByUserIdAndNameContainingIgnoreCase(Long userId, String keyword);
 }
